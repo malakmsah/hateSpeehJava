@@ -1,0 +1,53 @@
+buildscript {
+	ext {
+		springBootVersion = '1.5.7.RELEASE'
+	}
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+	}
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'org.springframework.boot'
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = 1.8
+
+repositories {
+	mavenCentral()
+	maven {
+		url "https://s3.amazonaws.com/runtimeconverter-releases/maven/release"
+	}
+}
+
+dependencies {
+	compile("org.springframework.boot:spring-boot-starter-web")
+	testCompile('org.springframework.boot:spring-boot-starter-test')
+	compile group: 'com.runtimeconverter', name: 'runtimeconverterlib', version: '2.0.1'
+	compile group: 'com.runtimeconverter.native', name: 'mac-library', version: '2.0.0'
+	compile group: 'com.runtimeconverter.native', name: 'ubuntu-library', version: '2.0.0'
+}
+
+bootRun {
+    systemProperty "runtimeConverterScriptName", System.getProperty("runtimeConverterScriptName")
+    systemProperty "runtimeConverterWorkingPath", System.getProperty("runtimeConverterWorkingPath")
+	if (System.getProperty("RUNTIME_JNI_LIBRARY") != null) {
+		systemProperty "RUNTIME_JNI_LIBRARY", System.getProperty("RUNTIME_JNI_LIBRARY")
+	}
+	if (System.getProperty("RUNTIME_PHP_LIBRARY") != null) {
+		systemProperty "RUNTIME_PHP_LIBRARY", System.getProperty("RUNTIME_PHP_LIBRARY")
+	}
+}
+
+task executeCLI(type:JavaExec) {
+    main = 'com.project.convertedCode.Application'
+    classpath = sourceSets.main.runtimeClasspath
+    args "cli"
+    systemProperty "runtimeConverterScriptName", System.getProperty("runtimeConverterScriptName")
+    systemProperty "runtimeConverterWorkingPath", System.getProperty("runtimeConverterWorkingPath")
+}
